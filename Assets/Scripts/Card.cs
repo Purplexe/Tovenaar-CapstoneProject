@@ -6,8 +6,8 @@ public class Card : MonoBehaviour
     public int Attack;
     public int Health;
     public int Cost = 2;
-    public PlayerSide Owner = PlayerSide.Player1;
+    public Side Owner;
 
-    public void TakeDamage(int dmg) { Health -= dmg; }
-    public bool IsDead => Health <= 0;
+    public void TakeDamage(int dmg) { Health -= Mathf.Max(0, dmg); }
+    public bool IsDead() => Health <= 0;
 }

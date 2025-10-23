@@ -1,28 +1,47 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-public class SlotDropZone : MonoBehaviour, IDropHandler
+[RequireComponent(typeof(RectTransform))]
+public class LaneDropZone : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    RectTransform slot;
-   
+    [Header("Optional snap target. If null, the card becomes a child of this lane.")]
+    public RectTransform snapTarget;
 
-    void Awake() { slot = transform as RectTransform; }
+    [Header("Should the card stretch to fit the lane/target?")]
+    public bool stretchToFit = true;
 
     public void OnDrop(PointerEventData eventData)
     {
-        var go = eventData.pointerDrag;
-        if (go == null) return;
+        var dragged = eventData.pointerDrag;
+        if (!dragged) return;
 
-        var rt = go.transform as RectTransform;
-        go.transform.SetParent(transform, false);
+        var draggable = dragged.GetComponent<CardDraggable>();
+        if (!draggable) return;
 
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.localScale = Vector3.one;
-        rt.anchoredPosition = Vector2.zero;
+        var parentForCard = (Transform)(snapTarget ? snapTarget : transform);
 
-        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slot.rect.width);
-        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slot.rect.height);
+        dragged.transform.SetParent(parentForCard, false);
+
+        var rt = dragged.transform as RectTransform;
+
+        if (stretchToFit)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.localScale = Vector3.one;
+        }
+        else
+        {
+            // Center it inside the lane/target
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = Vector2.zero;
+        }
     }
+
+    // Optional: simple hover feedback (e.g., highlight via a CanvasGroup)
+    public void OnPointerEnter(PointerEventData eventData) { }
+    public void OnPointerExit(PointerEventData eventData) { }
 }
