@@ -22,8 +22,8 @@ public class TovenaarLoginManager : MonoBehaviour
     [SerializeField] private TMP_InputField codeInput;
     [SerializeField] private TMP_Text errorLabel;
 
-    public string SessionToken { get; set; }
-    public int SelectedDeckId { get; set; }
+    public string SessionToken { get; set; } //Store token for use later
+    public int SelectedDeckId { get; set; } //Super useful
 
     private void Awake()
     {

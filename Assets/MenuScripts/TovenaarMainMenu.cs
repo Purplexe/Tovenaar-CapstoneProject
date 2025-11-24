@@ -8,6 +8,7 @@ using TMPro;
 
 [Serializable]
 public class DeckDBOject
+    //Deck DTO
 {
     public int id;
     public string name;
@@ -18,6 +19,7 @@ public class DeckDBOject
 
 [Serializable]
 public class DBJson
+    //JSON format 
 {
     public string status;
     public string username;
@@ -32,20 +34,20 @@ public class CreateDeckRequest
 
 public class TovenaarMainMenu : MonoBehaviour
 {
-    [Header("UI References")]
-    [SerializeField] private TMP_Text playerNameLabel;
-    [SerializeField] private Transform deckListContainer;   // parent with VerticalLayoutGroup
-    [SerializeField] private GameObject deckRowPrefab;   // Button + TMP_Text
-    [SerializeField] private TMP_Text statusLabel;
-    [SerializeField] private Button playButton;
+    
+    [SerializeField] private TMP_Text playerNameLabel; //Player Name for personability
+    [SerializeField] private Transform deckListContainer; //gonna contain all player decks
+    [SerializeField] private GameObject deckRowPrefab;   //Populates decklist
+    [SerializeField] private TMP_Text statusLabel;  //Last action done, debuggin stuff
+    [SerializeField] private Button playButton; //Moves to match
    
 
-    [Header("Create Deck UI")]
-    [SerializeField] private TMP_InputField newDeckNameInput;
-    [SerializeField] private Button createDeckButton;
+    
+    [SerializeField] private TMP_InputField newDeckNameInput; //Create deck name
+    [SerializeField] private Button createDeckButton;   //push
 
-    [Header("Scenes")]
-    [SerializeField] private string loginSceneName = "Login";  // your login scene name
+    
+    [SerializeField] private string loginSceneName = "HomeScreen";  // logout scene
 
     private DeckDBOject[] _decks;
     private DeckDBOject _selectedDeck;
@@ -54,13 +56,14 @@ public class TovenaarMainMenu : MonoBehaviour
     {
         // Ensure we have an auth manager & token
         if (TovenaarLoginManager.Instance == null ||
-            string.IsNullOrEmpty(TovenaarLoginManager.Instance.SessionToken))
+            string.IsNullOrEmpty(TovenaarLoginManager.Instance.SessionToken)) //told ya
         {
-            Debug.LogWarning("No SessionToken – sending back to login.");
+            //shoo
+            Debug.LogWarning("No SessionToken");
             SceneManager.LoadScene(loginSceneName);
             return;
         }
-
+        //Loading and disabling actions to prevent data corruption
         SetDeckActionButtonsEnabled(false);
         statusLabel.text = "Loading decks...";
 
@@ -79,7 +82,7 @@ public class TovenaarMainMenu : MonoBehaviour
     private IEnumerator LoadDecks()
     {
         string token = TovenaarLoginManager.Instance.SessionToken;
-        string url = TovenaarLoginManager.Instance.apiURL + "?token=" + Uri.EscapeDataString(token);
+        string url = TovenaarLoginManager.Instance.apiURL + "?token=" + Uri.EscapeDataString(token); //Getting Deck table from DB based on user token
 
         using UnityWebRequest req = UnityWebRequest.Get(url);
         yield return req.SendWebRequest();
@@ -110,7 +113,7 @@ public class TovenaarMainMenu : MonoBehaviour
             statusLabel.text = "No decks found or invalid response.";
             yield break;
         }
-
+        //success
         _decks = resp.decks;
 
         // Set player name
@@ -139,7 +142,7 @@ public class TovenaarMainMenu : MonoBehaviour
             DeckDBOject deck = _decks[i];
 
             GameObject rowObj = Instantiate(deckRowPrefab, deckListContainer);
-            var rowUI = rowObj.GetComponent<DeckRowUI>();
+            var rowUI = rowObj.GetComponent<DeckRowUI>(); //prefab I made to fit deck name, select button, and edit button. Select chooses deck for use while edit opens the web editor
 
             if (rowUI == null)
             {
@@ -150,7 +153,7 @@ public class TovenaarMainMenu : MonoBehaviour
             if (rowUI.nameLabel != null)
                 rowUI.nameLabel.text = deck.name;
 
-            // Capture local copy for lambdas
+            // Capture a copy 
             DeckDBOject capturedDeck = deck;
 
             if (rowUI.selectButton != null)
@@ -165,6 +168,7 @@ public class TovenaarMainMenu : MonoBehaviour
         _selectedDeck = deck;
         statusLabel.text = $"Selected deck: {deck.name}";
         SetDeckActionButtonsEnabled(true);
+        //Once a deck is selected, you can play the game. 
     }
 
     private void OnDeckEditClicked(DeckDBOject deck)
@@ -172,7 +176,7 @@ public class TovenaarMainMenu : MonoBehaviour
         if (deck == null)
             return;
 
-        // Build full URL: deck_edit.php?id=123
+        // Build URL and open web editor. 
         string url = TovenaarLoginManager.Instance.deckEditBaseUrl
                      + "?id=" + deck.id;
 
@@ -197,14 +201,15 @@ public class TovenaarMainMenu : MonoBehaviour
 
         Debug.Log("Play with deck ID " + _selectedDeck.id);
 
-        // Remember which deck we chose for this session
+        // Remember which deck we chose
         TovenaarLoginManager.Instance.SelectedDeckId = _selectedDeck.id;
 
-        // Go to matchmaking instead of straight to GameScene
+        // Go to matchmaking
         SceneManager.LoadScene("MatchScene");
     }
 
 
+    /*
     public void OnEditDeckClicked()
     {
         if (_selectedDeck == null)
@@ -216,6 +221,7 @@ public class TovenaarMainMenu : MonoBehaviour
         Debug.Log("Edit deck ID " + _selectedDeck.id);
         // TODO later: load deck builder scene, use _selectedDeck.id
     }
+    */
 
     private void OnCreateDeckClicked()
     {
@@ -265,10 +271,10 @@ public class TovenaarMainMenu : MonoBehaviour
     {
         if (TovenaarLoginManager.Instance != null)
         {
-            TovenaarLoginManager.Instance.SessionToken = null;
+            TovenaarLoginManager.Instance.SessionToken = null;//Discard token
             Destroy(TovenaarLoginManager.Instance.gameObject); //Needed so that the singleton can get references again
         }
 
-        SceneManager.LoadScene(loginSceneName);
+        SceneManager.LoadScene(loginSceneName); //go back to login
     }
 }

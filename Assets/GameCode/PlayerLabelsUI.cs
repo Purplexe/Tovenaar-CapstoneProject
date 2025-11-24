@@ -4,6 +4,7 @@ using Unity.Netcode;
 
 public class PlayerLabelsUI : MonoBehaviour
 {
+    //Using to get player 
     public TMP_Text topLabel;
     public TMP_Text bottomLabel;
 
@@ -21,13 +22,13 @@ public class PlayerLabelsUI : MonoBehaviour
 
         if (isLocalPlayer1)
         {
-            // Host / P1: your row is the bottom one
+            // Host = Bottom
             topLabel.text = "Opponent";
             bottomLabel.text = "You";
         }
         else
         {
-            // Client / P2: your row is the top one
+            // Client = Top
             topLabel.text = "You";
             bottomLabel.text = "Opponent";
         }

@@ -3,17 +3,14 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Networking;
 
-/// <summary>
-/// Loads the selected deck from your web API and feeds it to CardGameManager.
-/// Attach this to a GameObject in MatchScene (e.g. "GameSystems").
-/// </summary>
+//Calls deck_cards.php and gets cards within deck via C#
 public class DeckLoader : MonoBehaviour
 {
-    [Header("Config")]
-    // NOTE: includes /api because deck_cards.php lives in public/Tovenaar/api/
+    
+    //deck_cards.php lives in public/Tovenaar/api/
     public string apiBaseUrl = "https://zachrhodesportfolio.org/Tovenaar/api";
 
-    // Filled at runtime from TovenaarLoginManager.SelectedDeckId
+    // Filled from TovenaarLoginManager.SelectedDeckId
     private int deckIdForPlayer1;
 
     private void Start()
@@ -27,16 +24,15 @@ public class DeckLoader : MonoBehaviour
         if (deckIdForPlayer1 == 0)
         {
             Debug.LogWarning("[DeckLoader] SelectedDeckId was 0, using fallback deck 5.");
-            deckIdForPlayer1 = 5; // safety fallback so you always get *something*
+            deckIdForPlayer1 = 5; // 
         }
 
         StartCoroutine(WaitForNetworkAndLoad());
     }
 
-    /// <summary>
-    /// Wait until NetworkManager is running as server and CardGameManager exists,
-    /// then actually hit the API.
-    /// </summary>
+    
+    // Wait until NetworkManager is running - This was throwing so many issues. 
+    
     private IEnumerator WaitForNetworkAndLoad()
     {
         // Wait until NetworkManager exists and we are the server (host)
@@ -61,12 +57,14 @@ public class DeckLoader : MonoBehaviour
             token = TovenaarLoginManager.Instance.SessionToken; // <- make sure this property exists
         }
 
+        //Check token
         if (string.IsNullOrEmpty(token))
         {
-            Debug.LogError("[DeckLoader] Unity token is missing! Cannot authenticate deck request.");
+            Debug.LogError("Unity Token Missing.");
             yield break;
         }
 
+        //build URL w user token to get cards/deck
         string url = $"{apiBaseUrl}/deck_cards.php?deck_id={deckIdForPlayer1}&token={UnityWebRequest.EscapeURL(token)}";
         Debug.Log("[DeckLoader] Requesting deck from: " + url);
 
@@ -74,6 +72,7 @@ public class DeckLoader : MonoBehaviour
         {
             yield return req.SendWebRequest();
 
+            //yea idk, had to chatgpt an error in this script and this is the fix. Im not gonna mess with it. 
 #if UNITY_2020_1_OR_NEWER
             if (req.result != UnityWebRequest.Result.Success)
 #else

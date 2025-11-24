@@ -3,6 +3,8 @@ using TMPro;
 
 public class MultiplayerUI : MonoBehaviour
 {
+
+    //Controls logic in MatchScene, starts with connection and then populates the board based on data from user. 
     public GameObject connectRoot;
     public GameObject boardRoot;
 
@@ -17,7 +19,7 @@ public class MultiplayerUI : MonoBehaviour
 
     public async void OnHostClicked()
     {
-        statusLabel.text = "Starting host...";
+        statusLabel.text = "Starting host";
 
         string code = await MultiplayerManager.Instance.StartHostAsync();
 

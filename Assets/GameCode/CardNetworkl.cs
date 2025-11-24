@@ -5,12 +5,12 @@ using UnityEngine.UI;
 
 public class CardNetwork : NetworkBehaviour
 {
-    [Header("Base Stats (set on server before spawn)")]
-    public int baseAttack = 2;
-    public int baseHealth = 3;
+    //Initializing network object (Cards)
+    public int baseAttack = 0;
+    public int baseHealth = 0;
     public string cardName;
 
-    [Header("Visuals")]
+    
     public Image artImage;
     public TMP_Text nameText;
     public TMP_Text attackText;
@@ -21,6 +21,8 @@ public class CardNetwork : NetworkBehaviour
 
     public NetworkVariable<int> Health = new NetworkVariable<int>(
         0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    //link variable to network
 
     public override void OnNetworkSpawn()
     {
@@ -36,11 +38,13 @@ public class CardNetwork : NetworkBehaviour
         if (nameText != null)
             nameText.text = cardName;
 
-        // Init UI
+        // initialize the UI of the cards
         OnAttackChanged(0, Attack.Value);
         OnHealthChanged(0, Health.Value);
     }
 
+
+    //===================== Updating Card Attributes
     void OnDestroy()
     {
         Attack.OnValueChanged -= OnAttackChanged;
@@ -67,7 +71,7 @@ public class CardNetwork : NetworkBehaviour
         Health.Value -= damage;
         if (Health.Value <= 0)
         {
-            NetworkObject.Despawn();
+            NetworkObject.Despawn(); //Removes object
         }
     }
 }

@@ -9,9 +9,7 @@ public enum Side
     Player2 = 1
 }
 
-/// <summary>
-/// Lightweight data the server sends to clients to describe their hand.
-/// </summary>
+//Data object used to get hand stuff. 
 [Serializable]
 public struct HandCardData : INetworkSerializable
 {
@@ -21,7 +19,7 @@ public struct HandCardData : INetworkSerializable
     public int attack;
     public int health;
 
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter //prevents Nulls from disrupting
     {
         serializer.SerializeValue(ref card_uid);
         serializer.SerializeValue(ref name);
@@ -38,21 +36,19 @@ public class CardGameManager : NetworkBehaviour
     // Fired whenever the turn changes (on all clients)
     public static Action<Side> OnTurnChanged;
 
-    // Fired when game ends (on all clients) – UI can subscribe
+    // Fired when game ends (on all clients)
     public static Action<Side> OnGameOver;
 
-    [Header("Lane Parents (size 4 each)")]
+    
     public Transform[] player1Lanes;     // bottom row
     public Transform[] player2Lanes;     // top row
 
-    [Header("Card Prefab")]
     public GameObject cardPrefab;
 
-    [Header("Game Settings")]
     public int startingHp = 20;
     public int zielCap = 10;
 
-    // --- NETWORKED STATE ---
+    // Network state for variables
 
     private NetworkVariable<Side> currentTurn = new NetworkVariable<Side>(
         Side.Player1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -72,22 +68,22 @@ public class CardGameManager : NetworkBehaviour
     private NetworkVariable<int> p2ZielMax = new NetworkVariable<int>(
         0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    // --- SERVER-ONLY STATE ---
+    // Server Only States
 
-    // Full deck lists (server authoritative)
+    // pull deck list
     private readonly List<DeckCardDto> deckP1 = new List<DeckCardDto>();
     private readonly List<DeckCardDto> deckP2 = new List<DeckCardDto>();
 
-    // Cards in hand (server authoritative, mirrored to client via RPC)
+    // cards currently in each players hand
     private readonly List<DeckCardDto> handP1 = new List<DeckCardDto>();
     private readonly List<DeckCardDto> handP2 = new List<DeckCardDto>();
 
-    private bool gameStarted = false;
+    private bool gameStarted = false; // wait to start game until both playas are in 
 
-    // -------------------------------------------------------------------------
 
     private void Awake()
     {
+        //singleton 
         Instance = this;
     }
 
@@ -95,16 +91,19 @@ public class CardGameManager : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
+        //listening for clients connecting
+
         if (IsServer && NetworkManager.Singleton != null)
         {
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
-
+        //subscribe to turn change event
         currentTurn.OnValueChanged += HandleTurnChanged;
     }
 
     public override void OnNetworkDespawn()
     {
+        //clean event hook
         currentTurn.OnValueChanged -= HandleTurnChanged;
 
         if (IsServer && NetworkManager.Singleton != null)
@@ -113,9 +112,7 @@ public class CardGameManager : NetworkBehaviour
         }
     }
 
-    // -------------------------------------------------------------------------
-    // CONNECTION / GAME START
-    // -------------------------------------------------------------------------
+    //start game here
 
     private void OnClientConnected(ulong clientId)
     {
@@ -123,19 +120,18 @@ public class CardGameManager : NetworkBehaviour
             return;
 
         // Wait until both players are connected before starting
+        //1v1
         if (NetworkManager.Singleton.ConnectedClientsIds.Count == 2)
         {
             TryStartGame();
         }
     }
 
-    /// <summary>
-    /// Start the game once both decks and both players are ready.
-    /// </summary>
+    
     private void TryStartGame()
     {
         if (!IsServer) return;
-        if (gameStarted) return;
+        if (gameStarted) return; //already started
 
         int players = NetworkManager.Singleton != null
             ? NetworkManager.Singleton.ConnectedClientsIds.Count
@@ -143,11 +139,15 @@ public class CardGameManager : NetworkBehaviour
 
         Debug.Log($"[GM] TryStartGame: deckP1={deckP1.Count}, deckP2={deckP2.Count}, players={players}");
 
+        //get decks and players
         if (deckP1.Count == 0 || deckP2.Count == 0) return;
         if (players < 2) return;
+
         gameStarted = true;
         Debug.Log("[GM] GAME STARTED");
         // Init HP + ziel
+
+        //intialize player health + ziel (da resource of the game)
         p1Hp.Value = startingHp;
         p2Hp.Value = startingHp;
 
@@ -156,51 +156,40 @@ public class CardGameManager : NetworkBehaviour
         p1ZielCurrent.Value = 1;
         p2ZielCurrent.Value = 1;
 
-        // Opening hands (5 cards)
+        // draw 5 cards
         DrawCards(Side.Player1, 5);
         DrawCards(Side.Player2, 5);
 
+        //Host will always go first because im lazy
         currentTurn.Value = Side.Player1;
         OnTurnChanged?.Invoke(Side.Player1);
 
-        Debug.Log("GAME STARTED: Both players connected and decks loaded.");
+        Debug.Log("GAME STARTED.");
     }
 
-    // -------------------------------------------------------------------------
-    // PUBLIC API – called by DeckLoader and client scripts
-    // -------------------------------------------------------------------------
-
-    /// <summary>
-    /// Called by DeckLoader on the SERVER after loading a deck from DB.
-    /// For now, we also mirror this deck to Player2 if they have none.
-    /// </summary>
+    //Called by deckloader after deck is loaded from DB
     public void SetDeckForSide(Side side, DeckCardDto[] cards)
     {
         if (!IsServer) return;
-
-        Debug.Log($"[GM] SetDeckForSide({side}) with {cards.Length} cards");
 
         var deck = GetDeck(side);
         deck.Clear();
         deck.AddRange(cards);
 
+        //Needed both players to be able to connect so i just mirror player 1 deck. Change ASAP. Will be easy
+        //=============================================================================
         Side otherSide = side == Side.Player1 ? Side.Player2 : Side.Player1;
         var otherDeck = GetDeck(otherSide);
         if (otherDeck.Count == 0)
         {
             otherDeck.Clear();
             otherDeck.AddRange(cards);
-            Debug.Log($"[GM] Mirrored deck to {otherSide}");
         }
 
         TryStartGame();
     }
 
-
-    /// <summary>
-    /// Called by LaneClick on the local client when they click a lane,
-    /// using the currently selected hand card index from HandUI.
-    /// </summary>
+    //This is Laneclicks domain on the local client. Using the currently selected hand card, attempt to place into spot assuming its not occupied and u have enough 
     public void RequestPlayCard(int laneIndex, bool isPlayer1Lane, int handIndex)
     {
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient)
@@ -222,12 +211,13 @@ public class CardGameManager : NetworkBehaviour
             return;
         }
 
-        if (handIndex < 0)
+        if (handIndex < 0) //select a card dummy
         {
             Debug.Log("No card selected.");
             return;
         }
 
+        //validate on server
         PlayCardServerRpc(laneIndex, mySide, handIndex);
     }
 
@@ -237,16 +227,14 @@ public class CardGameManager : NetworkBehaviour
         return NetworkManager.Singleton.LocalClientId == 0 ? Side.Player1 : Side.Player2;
     }
 
-    // -------------------------------------------------------------------------
-    // SERVER RPCs & hand / deck utilities
-    // -------------------------------------------------------------------------
-
+ 
     [ServerRpc(RequireOwnership = false)]
     private void PlayCardServerRpc(int laneIndex, Side side, int handIndex, ServerRpcParams rpcParams = default)
     {
         if (!IsServer)
             return;
 
+        //figure our who owns
         Transform laneParent = side == Side.Player1 ? player1Lanes[laneIndex] : player2Lanes[laneIndex];
         if (laneParent.childCount > 0)
         {
@@ -503,34 +491,32 @@ public class CardGameManager : NetworkBehaviour
     {
         if (!IsServer) return false;
 
-        if (p1Hp.Value <= 0 && p2Hp.Value <= 0)
+        if (p1Hp.Value <= 0 && p2Hp.Value <= 0) //Player health above 0? 
         {
-            GameOverClientRpc(Side.Player1); // treat as tie if you want custom logic
+            GameOverClientRpc(Side.Player1); //Tie
             return true;
         }
         else if (p1Hp.Value <= 0)
         {
-            GameOverClientRpc(Side.Player2);
+            GameOverClientRpc(Side.Player2); //Player 2 wins!
             return true;
         }
         else if (p2Hp.Value <= 0)
         {
-            GameOverClientRpc(Side.Player1);
+            GameOverClientRpc(Side.Player1); // Player 1 wins!
             return true;
         }
 
-        return false;
+        return false; // Play ball
     }
 
     [ClientRpc]
     private void GameOverClientRpc(Side winner, ClientRpcParams rpcParams = default)
     {
-        OnGameOver?.Invoke(winner);
+        OnGameOver?.Invoke(winner); //No logic here yet, still need to get everything populated and working correctly. 
     }
 
-    // -------------------------------------------------------------------------
-    // Helper accessors
-    // -------------------------------------------------------------------------
+   //Helper Accessors assigned to players
 
     private List<DeckCardDto> GetDeck(Side side) =>
         side == Side.Player1 ? deckP1 : deckP2;

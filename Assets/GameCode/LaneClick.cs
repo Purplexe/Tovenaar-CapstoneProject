@@ -13,12 +13,12 @@ public class LaneClick : MonoBehaviour
 
     private void OnClick()
     {
-        if (CardGameManager.Instance == null) return;
-        if (HandUI.Instance == null) return;
+        if (CardGameManager.Instance == null) return; //Need Main game Logic
+        if (HandUI.Instance == null) return; // Need Hand Logic to store/place cards
 
         int selectedIndex = HandUI.Instance.SelectedIndex;
 
-        // Correct: ONLY 3 arguments
+        //lane index, if lane belongs to the player, and the index of the selected card from HandUI
         CardGameManager.Instance.RequestPlayCard(
             laneIndex,
             isPlayer1Lane,

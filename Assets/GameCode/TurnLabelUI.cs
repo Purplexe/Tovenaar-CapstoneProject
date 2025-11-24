@@ -6,6 +6,8 @@ public class TurnLabelUI : MonoBehaviour
 {
     public TMP_Text label;
 
+
+    //determining whos side is whos
     private void OnEnable()
     {
         CardGameManager.OnTurnChanged += HandleTurnChanged;

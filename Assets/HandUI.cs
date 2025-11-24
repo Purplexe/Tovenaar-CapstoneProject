@@ -8,7 +8,7 @@ public class HandUI : MonoBehaviour
 {
     public static HandUI Instance { get; private set; }
 
-    public Transform handRoot;          // layout parent
+    public Transform handRoot;          // this
     public GameObject handCardPrefab;   // button prefab
 
     private List<HandCardData> currentHand = new List<HandCardData>();
@@ -19,19 +19,19 @@ public class HandUI : MonoBehaviour
         Instance = this;
     }
     
-
-    public void SetHand(HandCardData[] cards)
+    //Make hand
+    public void SetHand(HandCardData[] cards) //Hand card data lives in card game manager
     {
         currentHand.Clear();
         currentHand.AddRange(cards);
         SelectedIndex = -1;
 
-        foreach (Transform child in handRoot)
+        foreach (Transform child in handRoot) //remove transform cuz we have a horizontal layout group. 
             Destroy(child.gameObject);
 
         for (int i = 0; i < currentHand.Count; i++)
         {
-            int idx = i;
+            int index = i;
             var data = currentHand[i];
             GameObject go = Instantiate(handCardPrefab, handRoot);
 
@@ -41,16 +41,19 @@ public class HandUI : MonoBehaviour
             if (texts.Length > 1) texts[1].text = data.cost.ToString();
 
             // art by card_uid
+            //This doesn't work so well. Needs more work 
+            //=================================================================================
             var img = go.GetComponentInChildren<Image>();
             if (img != null)
             {
                 var sprite = Resources.Load<Sprite>($"Cards/{data.card_uid}");
                 if (sprite != null) img.sprite = sprite;
             }
+            //=================================================================================
 
             go.GetComponent<Button>().onClick.AddListener(() =>
             {
-                SelectedIndex = idx;
+                SelectedIndex = index;
             });
         }
     }
