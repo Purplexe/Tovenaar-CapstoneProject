@@ -1110,50 +1110,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 464978348}
   m_CullTransparentMesh: 1
---- !u!1 &717936542
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 717936544}
-  - component: {fileID: 717936543}
-  m_Layer: 0
-  m_Name: AuthSession
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &717936543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 717936542}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7f1407969ede5a48b54dc752149710f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &717936544
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 717936542}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 557.555, y: 428, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &779946794
 GameObject:
   m_ObjectHideFlags: 0
@@ -1316,8 +1272,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   unityLoginUrl: https://zachrhodesportfolio.org/Tovenaar/unity_login.php?redirect=tovenaar://auth/callback
-  decksApiUrl: https://zachrhodesportfolio.org/Tovenaar/api/decks.php
+  deckEditBaseUrl: https://zachrhodesportfolio.org/Tovenaar/deck_edit.php
+  apiURL: https://zachrhodesportfolio.org/Tovenaar/api/decks.php
   mainMenuScene: Menu
+  gameScene: GameScene
   codeInput: {fileID: 31211791}
   errorLabel: {fileID: 2102711262}
 --- !u!1 &1130802877
@@ -2401,6 +2359,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1729950636}
   m_CullTransparentMesh: 1
+--- !u!1 &1826048508
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1826048510}
+  - component: {fileID: 1826048509}
+  m_Layer: 0
+  m_Name: UGSInitializer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1826048509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826048508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 450346e12b7a1e64997e90e7b6e0d38c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1826048510
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1826048508}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 945.9074, y: 530.9894, z: 104.503654}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1860598247
 GameObject:
   m_ObjectHideFlags: 0
@@ -2894,4 +2896,4 @@ SceneRoots:
   - {fileID: 779946798}
   - {fileID: 1860598250}
   - {fileID: 956390832}
-  - {fileID: 717936544}
+  - {fileID: 1826048510}

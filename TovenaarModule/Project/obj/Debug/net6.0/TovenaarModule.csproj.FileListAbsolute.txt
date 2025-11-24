@@ -1,0 +1,6 @@
+D:\CapstoneProject\TovenaarModule\Project\obj\Debug\net6.0\TovenaarModule.csproj.AssemblyReference.cache
+D:\CapstoneProject\TovenaarModule\Project\obj\Debug\net6.0\TovenaarModule.GeneratedMSBuildEditorConfig.editorconfig
+D:\CapstoneProject\TovenaarModule\Project\obj\Debug\net6.0\TovenaarModule.AssemblyInfoInputs.cache
+D:\CapstoneProject\TovenaarModule\Project\obj\Debug\net6.0\TovenaarModule.AssemblyInfo.cs
+D:\CapstoneProject\TovenaarModule\Project\obj\Debug\net6.0\TovenaarModule.csproj.CoreCompileInputs.cache
+D:\CapstoneProject\TovenaarModule\Project\obj\Debug\net6.0\TovenaarModule.sourcelink.json
