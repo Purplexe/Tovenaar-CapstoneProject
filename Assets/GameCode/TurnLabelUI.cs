@@ -10,20 +10,20 @@ public class TurnLabelUI : MonoBehaviour
     //determining whos side is whos
     private void OnEnable()
     {
-        CardGameManager.OnTurnChanged += HandleTurnChanged;
+        TovenaarGameManager.OnTurnChanged += HandleTurnChanged;
     }
 
     private void OnDisable()
     {
-        CardGameManager.OnTurnChanged -= HandleTurnChanged;
+        TovenaarGameManager.OnTurnChanged -= HandleTurnChanged;
     }
 
     private void HandleTurnChanged(Side whoseTurn)
     {
-        if (CardGameManager.Instance == null || label == null)
+        if (TovenaarGameManager.Instance == null || label == null)
             return;
 
-        Side mySide = CardGameManager.Instance.GetLocalSide();
+        Side mySide = TovenaarGameManager.Instance.GetLocalSide();
 
         bool isMyTurn = (whoseTurn == mySide);
 

@@ -1,28 +1,31 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class LaneClick : MonoBehaviour
 {
     public int laneIndex;
     public bool isPlayer1Lane;
 
-    private void Start()
+    // Hook this to the lane button's OnClick
+    public void OnLaneClicked()
     {
-        GetComponent<Button>().onClick.AddListener(OnClick);
-    }
+        int selectedIndex = -1;
 
-    private void OnClick()
-    {
-        if (CardGameManager.Instance == null) return; //Need Main game Logic
-        if (HandUI.Instance == null) return; // Need Hand Logic to store/place cards
+        if (HandUI.Instance != null)
+        {
+            selectedIndex = HandUI.Instance.GetSelectedIndex();
+        }
 
-        int selectedIndex = HandUI.Instance.SelectedIndex;
-
-        //lane index, if lane belongs to the player, and the index of the selected card from HandUI
-        CardGameManager.Instance.RequestPlayCard(
-            laneIndex,
-            isPlayer1Lane,
-            selectedIndex
-        );
+        if (TovenaarGameManager.Instance != null)
+        {
+            TovenaarGameManager.Instance.RequestPlayCard(
+                laneIndex,
+                isPlayer1Lane,
+                selectedIndex
+            );
+        }
+        else
+        {
+            Debug.LogWarning("[LaneClick] TovenaarGameManager.Instance is null.");
+        }
     }
 }

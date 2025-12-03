@@ -1,10 +1,12 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Netcode;
+
 
 [Serializable]
 public class DeckDBOject
@@ -192,7 +194,6 @@ public class TovenaarMainMenu : MonoBehaviour
 
     public void OnPlayClicked()
     {
-
         if (_selectedDeck == null)
         {
             Debug.LogWarning("Play clicked without deck selection.");
@@ -201,27 +202,29 @@ public class TovenaarMainMenu : MonoBehaviour
 
         Debug.Log("Play with deck ID " + _selectedDeck.id);
 
-        // Remember which deck we chose
+        // Remember which deck we chose for the match scene
         TovenaarLoginManager.Instance.SelectedDeckId = _selectedDeck.id;
 
-        // Go to matchmaking
-        SceneManager.LoadScene("MatchScene");
-    }
-
-
-    /*
-    public void OnEditDeckClicked()
-    {
-        if (_selectedDeck == null)
+        // If Netcode is already running as host/server, use Netcode scene loading
+        if (NetworkManager.Singleton != null &&
+            (NetworkManager.Singleton.IsHost || NetworkManager.Singleton.IsServer))
         {
-            Debug.LogWarning("Edit clicked without deck selection.");
-            return;
+            Debug.Log("[TovenaarMainMenu] Host/server already running, loading MatchScene via Netcode.");
+            NetworkManager.Singleton.SceneManager.LoadScene(
+                "MatchScene",
+                LoadSceneMode.Single
+            );
         }
-
-        Debug.Log("Edit deck ID " + _selectedDeck.id);
-        // TODO later: load deck builder scene, use _selectedDeck.id
+        else
+        {
+            // No Netcode session yet (or this is just offline) → normal scene load
+            Debug.Log("[TovenaarMainMenu] No Netcode session, loading MatchScene locally.");
+            SceneManager.LoadScene("MatchScene");
+        }
     }
-    */
+
+
+
 
     private void OnCreateDeckClicked()
     {

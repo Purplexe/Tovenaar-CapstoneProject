@@ -13,7 +13,7 @@ public class MultiplayerManager : MonoBehaviour
 {
     public static MultiplayerManager Instance { get; private set; }
 
-    public string LastJoinCode { get; private set; }
+    [SerializeField] public string LastJoinCode { get; private set; }
     public bool IsReady { get; private set; }
 
     private UnityTransport _transport;

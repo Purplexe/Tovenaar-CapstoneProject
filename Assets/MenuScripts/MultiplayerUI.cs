@@ -11,6 +11,8 @@ public class MultiplayerUI : MonoBehaviour
     public TMP_InputField joinCodeInput;
     public TMP_Text statusLabel;
 
+    public TMP_Text LobbyJoinCode;
+
     private void Start()
     {
         connectRoot.SetActive(true);
@@ -31,6 +33,7 @@ public class MultiplayerUI : MonoBehaviour
 
         statusLabel.text = "Join Code: " + code;
         ShowBoard();
+        LobbyJoinCode.text = code;
     }
 
     public async void OnJoinClicked()

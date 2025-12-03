@@ -34,6 +34,7 @@ public class TovenaarLoginManager : MonoBehaviour
         }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
     }
 
     // Called by LoginUIManager

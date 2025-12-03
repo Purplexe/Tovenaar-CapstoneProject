@@ -1,77 +1,126 @@
-using TMPro;
+/*
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class CardNetwork : NetworkBehaviour
+public class NetworkCard : NetworkBehaviour
 {
-    //Initializing network object (Cards)
-    public int baseAttack = 0;
-    public int baseHealth = 0;
-    public string cardName;
+    // ---------------- NetVars ----------------
 
-    
-    public Image artImage;
-    public TMP_Text nameText;
-    public TMP_Text attackText;
-    public TMP_Text healthText;
+    public NetworkVariable<int> Attack = new NetworkVariable<int>();
+    public NetworkVariable<int> Health = new NetworkVariable<int>();
+    public NetworkVariable<int> Cost = new NetworkVariable<int>();
 
-    public NetworkVariable<int> Attack = new NetworkVariable<int>(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> OwnerSide = new NetworkVariable<int>();  // 0 = P1, 1 = P2
+    public NetworkVariable<int> LaneIndex = new NetworkVariable<int>();  // 0..3
 
-    public NetworkVariable<int> Health = new NetworkVariable<int>(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    // Strings as FixedStrings so they can be NetVars
+    public NetworkVariable<FixedString64Bytes> NetUid = new NetworkVariable<FixedString64Bytes>();
+    public NetworkVariable<FixedString64Bytes> NetName = new NetworkVariable<FixedString64Bytes>();
+    public NetworkVariable<FixedString32Bytes> NetRarity = new NetworkVariable<FixedString32Bytes>();
+    public NetworkVariable<FixedString128Bytes> NetRules = new NetworkVariable<FixedString128Bytes>();
 
-    //link variable to network
+    // ---------------- Non-networked ----------------
+
+    private BoardCardVisual _visual;  // UI instance on this client
+
+    // Called by GameManager on the SERVER before Spawn()
+    public void InitFromDto(DeckCardDto data, Side owner, int laneIndex)
+    {
+        bool runtimeIsServer = NetworkManager.Singleton != null &&
+                               NetworkManager.Singleton.IsServer;
+        if (!runtimeIsServer)
+            return;
+
+        OwnerSide.Value = (int)owner;
+        LaneIndex.Value = laneIndex;
+
+        Attack.Value = data.attack;
+        Health.Value = data.health;
+        Cost.Value = data.cost;
+
+        string uid = string.IsNullOrEmpty(data.card_uid) ? "" : data.card_uid;
+        string name = string.IsNullOrEmpty(data.name) ? uid : data.name;
+
+        NetUid.Value = uid;
+        NetName.Value = name;
+        NetRarity.Value = string.IsNullOrEmpty(data.rarity) ? "" : data.rarity;
+        NetRules.Value = string.IsNullOrEmpty(data.rules_text) ? "" : data.rules_text;
+    }
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
+        base.OnNetworkSpawn();
+
+        if (!IsClient)
+            return;
+
+        // Find which lane UI this card should appear in for THIS client.
+        BoardLayout layout = BoardLayout.Instance;
+        if (layout == null)
         {
-            Attack.Value = baseAttack;
-            Health.Value = baseHealth;
+            Debug.LogError("[NetworkCard] BoardLayout.Instance is null.");
+            return;
         }
 
-        Attack.OnValueChanged += OnAttackChanged;
-        Health.OnValueChanged += OnHealthChanged;
+        Transform laneUI = layout.GetLaneTransformForCardOwner(
+            (Side)OwnerSide.Value,
+            LaneIndex.Value
+        );
 
-        if (nameText != null)
-            nameText.text = cardName;
+        if (laneUI == null)
+        {
+            Debug.LogError("[NetworkCard] Lane UI transform is null.");
+            return;
+        }
 
-        // initialize the UI of the cards
-        OnAttackChanged(0, Attack.Value);
-        OnHealthChanged(0, Health.Value);
+        // Instantiate the visual card under that lane
+        GameObject visualObj = GameObject.Instantiate(layout.boardCardPrefab, laneUI);
+        _visual = visualObj.GetComponent<BoardCardVisual>();
+
+        if (_visual == null)
+        {
+            Debug.LogError("[NetworkCard] BoardCardVisual missing on prefab.");
+        }
+        else
+        {
+            _visual.Bind(this);
+        }
     }
 
-
-    //===================== Updating Card Attributes
-    void OnDestroy()
+    public override void OnNetworkDespawn()
     {
-        Attack.OnValueChanged -= OnAttackChanged;
-        Health.OnValueChanged -= OnHealthChanged;
+        base.OnNetworkDespawn();
+
+        // Kill the local UI
+        if (_visual != null)
+        {
+            Destroy(_visual.gameObject);
+            _visual = null;
+        }
+
+        // Tell GameManager to clear this board slot (server only)
+        if (IsServer && TovenaarGameManager.Instance != null)
+        {
+            TovenaarGameManager.Instance.ClearBoardSlot(
+                (Side)OwnerSide.Value,
+                LaneIndex.Value,
+                this
+            );
+        }
     }
 
-    void OnAttackChanged(int oldVal, int newVal)
-    {
-        if (attackText != null)
-            attackText.text = newVal.ToString();
-    }
-
-    void OnHealthChanged(int oldVal, int newVal)
-    {
-        if (healthText != null)
-            healthText.text = newVal.ToString();
-    }
-
+    // Server-side damage helper
     [ServerRpc(RequireOwnership = false)]
     public void TakeDamageServerRpc(int damage)
     {
-        if (damage <= 0) return;
+        if (!IsServer) return;
 
         Health.Value -= damage;
         if (Health.Value <= 0)
         {
-            NetworkObject.Despawn(); //Removes object
+            NetworkObject.Despawn(true);
         }
     }
 }
+*/
